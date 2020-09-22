@@ -27,7 +27,7 @@
 	},
 	"scripts": {
 		"phpstan": "phpstan analyse --autoload-file vendor/autoload.php --level 5 --configuration tests/phpstan.neon src",
-		"tester": "tester tests -s"
+		"tester": "tester tests -s -c ./tests/php-win.ini"
 	},
 	"extra": {
 		"branch-alias": {
