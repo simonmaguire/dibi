@@ -87,10 +87,10 @@ class SqlsrvDriver implements Dibi\Driver
 	 * Executes the SQL query.
 	 * @throws Dibi\DriverException
 	 */
-	public function query(string $sql): ?Dibi\ResultDriver
+	public function query(string $sql, array $params = []): ?Dibi\ResultDriver
 	{
 		$this->affectedRows = null;
-		$res = sqlsrv_query($this->connection, $sql);
+		$res = sqlsrv_query($this->connection, $sql, $params);
 
 		if ($res === false) {
 			$info = sqlsrv_errors();

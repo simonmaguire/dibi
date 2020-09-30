@@ -29,6 +29,9 @@ final class Translator
 	/** @var array */
 	private $args;
 
+	/** @var array */
+	private $params;
+
 	/** @var string[] */
 	private $errors;
 
@@ -50,6 +53,8 @@ final class Translator
 	/** @var HashMap */
 	private $identifiers;
 
+	public  $BASIC_MODS = array('s', 'i', 'd', "t", "dt", "bin", "b", "f");
+
 
 	public function __construct(Connection $connection)
 	{
@@ -63,7 +68,7 @@ final class Translator
 	 * Generates SQL. Can be called only once.
 	 * @throws Exception
 	 */
-	public function translate(array $args): string
+	public function translate(array $args)
 	{
 		$args = array_values($args);
 		while (count($args) === 1 && is_array($args[0])) { // implicit array expansion
@@ -91,6 +96,7 @@ final class Translator
 				if (strlen($arg) === $toSkip) { // needn't be translated
 					$sql[] = $arg;
 				} else {
+					$this->params = [];
 					$sql[] = substr($arg, 0, $toSkip)
 /*
 					. preg_replace_callback('/
@@ -162,6 +168,9 @@ final class Translator
 			$this->driver->applyLimit($sql, $this->limit, $this->offset);
 		}
 
+		if(!empty($this->params)){
+			return array($sql, $this->params);
+		}
 		return $sql;
 	}
 
@@ -570,6 +579,12 @@ final class Translator
 
 			} else { // default processing
 				$cursor++;
+				if($this->connection->config['generalizedQuery']){
+					if(in_array($mod, $this->BASIC_MODS)){
+						array_push($this->params, $mod == 's' ? $this->args[$cursor - 1] : $this->formatValue($this->args[$cursor - 1], $mod));
+						 return "?";}
+
+				}
 				return $this->formatValue($this->args[$cursor - 1], $mod);
 			}
 		}

@@ -200,9 +200,12 @@ class Connection implements IConnection
 	 */
 	final public function query(...$args): Result
 	{
-		return $this->nativeQuery($this->translateArgs($args));
+		
+		$translation = $this->translateArgs($args);
+		$result = is_array($translation) ? $this->nativeQuery($translation[0], $translation[1]) : $this->nativeQuery($translation) ;
+		
+		return $result;
 	}
-
 
 	/**
 	 * Generates SQL query.
@@ -250,7 +253,7 @@ class Connection implements IConnection
 	/**
 	 * Generates SQL query.
 	 */
-	protected function translateArgs(array $args): string
+	protected function translateArgs(array $args)
 	{
 		if (!$this->driver) {
 			$this->connect();
@@ -263,7 +266,7 @@ class Connection implements IConnection
 	 * Executes the SQL query.
 	 * @throws Exception
 	 */
-	final public function nativeQuery(string $sql): Result
+	final public function nativeQuery(string $sql, array $params = []): Result
 	{
 		if (!$this->driver) {
 			$this->connect();
@@ -272,7 +275,7 @@ class Connection implements IConnection
 		\dibi::$sql = $sql;
 		$event = $this->onEvent ? new Event($this, Event::QUERY, $sql) : null;
 		try {
-			$res = $this->driver->query($sql);
+			$res = $this->driver->query($sql, $params);
 
 		} catch (DriverException $e) {
 			if ($event) {
