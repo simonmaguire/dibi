@@ -21,30 +21,24 @@ $names = array('Bucky', "Ruffus");
 $breeds = array('lab', "yorki");
 
 $sql = <<<'SQL'
-            Select * from dbo.GoodBoys where ID=%i and Name = %s and Breed = %s
+            Select * from dbo.GoodBoys where Name LIKE %like~ 
         SQL;
 
+$result = $database->fetchAll($sql, "G");
 
-foreach($ids as $id){
-    foreach($names as $name){
-        foreach($breeds as $breed){
-            $result = $database->fetchAll($sql, $id, $name, $breed);
-        }
-    }
 
-}
+// foreach($ids as $id){
+//     foreach($names as $name){
+//         foreach($breeds as $breed){
+//             $result = $database->fetchAll($sql, 1, "Gruff", "doberman");
+//         }
+//     }
 
+// }
 
 echo "---Results---\n"  ;
 print_r($result);
 echo "\n";
-
-
-// echo "---Results All---\n"  ;
-// print_r($result3);
-// echo "\n";
-
-
 
 
 $query_sql = "SELECT cplan.usecounts, cplan.objtype, qtext.text, qplan.query_plan
