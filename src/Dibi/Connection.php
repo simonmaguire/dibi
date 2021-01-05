@@ -200,9 +200,13 @@ class Connection implements IConnection
 	 */
 	final public function query(...$args): Result
 	{
+		if($this->getConfig('generalizedQuery')){
+			$translationWithParams = $this->translateArgsParameterized($args);
+			return $this->nativeQuery($translationWithParams['translation'], $translationWithParams['parameters']);
+		}
 		
 		$translation = $this->translateArgs($args);
-		$result = is_array($translation) ? $this->nativeQuery($translation[0], $translation[1]) : $this->nativeQuery($translation) ;
+		$result =  $this->nativeQuery($translation) ;
 		
 		return $result;
 	}
@@ -212,9 +216,9 @@ class Connection implements IConnection
 	 * @param  mixed  ...$args
 	 * @throws Exception
 	 */
-	final public function translate(...$args): string
+	final public function translate(...$args)
 	{
-		return $this->translateArgs($args);
+		return $this->getConfig('generalizedQuery') ? $this->translateArgsParameterized($args) : $this->translateArgs($args);
 	}
 
 
@@ -259,6 +263,22 @@ class Connection implements IConnection
 			$this->connect();
 		}
 		return (clone $this->translator)->translate($args);
+	}
+
+
+	/**
+	 * Generates SQL query and Parameters
+	 */
+	protected function translateArgsParameterized(array $args)
+	{
+		if (!$this->driver) {
+			$this->connect();
+		}
+		$tempTranslator = clone $this->translator;
+		$translation = $tempTranslator->translate($args);
+		$params = $tempTranslator->getParams();
+
+		return ['translation' => $translation, 'parameters' => $params];
 	}
 
 

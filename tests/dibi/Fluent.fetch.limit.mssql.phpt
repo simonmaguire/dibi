@@ -18,7 +18,7 @@ class MockDriver extends Dibi\Drivers\SqlsrvDriver
 	}
 
 
-	public function query(string $sql): ?Dibi\ResultDriver
+	public function query(string $sql, array $params = []): ?Dibi\ResultDriver
 	{
 		return new MockResult;
 	}

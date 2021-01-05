@@ -36,12 +36,13 @@ CREATE TABLE orders (
 	customer_id int NOT NULL,
 	product_id int NOT NULL,
 	amount float NOT NULL,
+	order_date DATE NOT NULL,
 	PRIMARY KEY(order_id)
 );
 
 SET IDENTITY_INSERT orders ON;
-INSERT INTO orders (order_id, customer_id, product_id, amount) VALUES (1, 2, 1, 7);
-INSERT INTO orders (order_id, customer_id, product_id, amount) VALUES (2, 2, 3, 2);
-INSERT INTO orders (order_id, customer_id, product_id, amount) VALUES (3, 1, 2, 3);
-INSERT INTO orders (order_id, customer_id, product_id, amount) VALUES (4, 6, 3, 5);
+INSERT INTO orders (order_id, customer_id, product_id, amount, order_date) VALUES (1, 2, 1, 7, '2020-01-01');
+INSERT INTO orders (order_id, customer_id, product_id, amount, order_date) VALUES (2, 2, 3, 2, '2020-02-01');
+INSERT INTO orders (order_id, customer_id, product_id, amount, order_date) VALUES (3, 1, 2, 3, '2020-03-01');
+INSERT INTO orders (order_id, customer_id, product_id, amount, order_date) VALUES (4, 6, 3, 5, '2020-04-01');
 SET IDENTITY_INSERT orders OFF;

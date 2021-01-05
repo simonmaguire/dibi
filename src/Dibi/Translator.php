@@ -53,7 +53,7 @@ final class Translator
 	/** @var HashMap */
 	private $identifiers;
 
-	public  $BASIC_MODS = array('s', 'i', 'd', "t", "dt", "bin", "b", "f");
+	private  $BASIC_MODS = array('s', 'i', 'd', "t", "dt", "b", "f", "like~", "~like~", "~like", "like");
 
 
 	public function __construct(Connection $connection)
@@ -63,6 +63,10 @@ final class Translator
 		$this->identifiers = new HashMap([$this, 'delimite']);
 	}
 
+
+	public function getParams(){
+		return $this->params;
+	}
 
 	/**
 	 * Generates SQL. Can be called only once.
@@ -168,9 +172,6 @@ final class Translator
 			$this->driver->applyLimit($sql, $this->limit, $this->offset);
 		}
 
-		if(!empty($this->params)){
-			return array($sql, $this->params);
-		}
 		return $sql;
 	}
 
@@ -579,12 +580,12 @@ final class Translator
 
 			} else { // default processing
 				$cursor++;
-				if($this->connection->config['generalizedQuery']){
-					if(in_array($mod, $this->BASIC_MODS)){
-						array_push($this->params, $mod == 's' ? $this->args[$cursor - 1] : $this->formatValue($this->args[$cursor - 1], $mod));
-						 return "?";}
-
+				
+				if($this->connection->getConfig('generalizedQuery') && in_array($mod, $this->BASIC_MODS)){
+						$this->handleParam($mod, $this->args[$cursor - 1]);
+						return "?";
 				}
+
 				return $this->formatValue($this->args[$cursor - 1], $mod);
 			}
 		}
@@ -617,7 +618,14 @@ final class Translator
 
 		throw new \Exception('this should be never executed');
 	}
+	
+	public function handleParam($mod, $value){
+		$formattedValue = $value === null ? null : trim(
+			in_array($mod, ['s', 'd', 'dt']) ? $value : $this->formatValue($value, $mod),
+			 "'");
 
+		array_push($this->params, $formattedValue);				
+	}
 
 	/**
 	 * Apply substitutions to identifier and delimites it.

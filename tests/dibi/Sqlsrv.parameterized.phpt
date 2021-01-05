@@ -15,24 +15,35 @@ $conn = new Dibi\Connection($config + ['generalizedQuery'=>true]);
 $conn->loadFile(__DIR__ . "/data/sqlsrv.sql");
 
 
-//Query with %f mod -- I CANT succesffully query orders 
-$res = $conn->query('SELECT * FROM dbo.orders');
-Assert::equal(7.0,
+
+
+//Query with sN and iN mods 
+$res = $conn->query('SELECT * FROM [customers] WHERE name = %sN AND customer_id = %iN', 'Dave Lister', 1);
+Assert::equal(1, count($res->fetchAll()));
+
+
+
+//Query with LIKE mods 
+$res = $conn->query('SELECT * FROM [customers] WHERE name LIKE %like~', 'Dave');
+Assert::equal(1, count($res->fetchAll()));
+
+
+//Query with %f mod
+$res = $conn->query('SELECT * FROM dbo.orders WHERE amount=%f', 2.0);
+Assert::equal(2.0,
 	$res->fetch()['amount']);
 
 
-//Query with %f mod -- I CANT succesffully query orders 
-$res = $conn->query('SELECT * FROM dbo.orders WHERE amount=%f', 7.0);
-Assert::equal(new Dibi\Row(['order_id' => 1, 'customer_id' => 2,'product_id' => 1,'amount' => 7]),
-	$res->fetch());
+//%dt
+$res = $conn->query('SELECT * FROM dbo.orders WHERE order_date>%dt', (string) new DateTime('2019-04-01') );
+Assert::equal(4,
+	count($res->fetchAll()));
 
-//Query with LIKE mods 
-//$res = $conn->query('SELECT * FROM [customers] WHERE name LIKE %like~', 'Dave');
-//Assert::equal(new Dibi\Row([
-//	'customer_id' => 1,
-//	'name' => 'Dave Lister',
-//]), $res->fetch());
-
+//%d
+$res = $conn->query('SELECT * FROM [orders] WHERE order_date>%d', '2020-2-2');
+Assert::same(2 ,
+	count($res->fetchAll())
+);
 
 
 //Query with %s and $i mods 
@@ -51,23 +62,22 @@ Assert::equal(new Dibi\Row([
 ]), $res->fetch());
 
 
-//Go through and remove array indexes and change those with 1 to the new get param func
 Assert::same('SELECT * FROM [table] WHERE id=? AND name=?' ,
-	$conn->translate('SELECT * FROM [table] WHERE id=%i AND name=%s', 10, 'ahoj')[0]
+	$conn->translate('SELECT * FROM [table] WHERE id=%i AND name=%s', 10, 'ahoj')['translation']
 );
 
 
 Assert::same(['10', 'ahoj'] ,
-	$conn->translate('SELECT * FROM [table] WHERE id=%i AND name=%s', 10, 'ahoj')[1]
+	$conn->translate('SELECT * FROM [table] WHERE id=%i AND name=%s', 10, 'ahoj')['parameters']
 );
 
 
 Assert::same('SELECT * FROM [table] WHERE col=?' ,
-	$conn->translate('SELECT * FROM [table] WHERE col=%b', True)[0]
+	$conn->translate('SELECT * FROM [table] WHERE col=%b', True)['translation']
 );
 
 
 Assert::same(['1'] ,
-	$conn->translate('SELECT * FROM [table] WHERE col=%b', True)[1]
+	$conn->translate('SELECT * FROM [table] WHERE col=%b', True)['parameters']
 );
 
